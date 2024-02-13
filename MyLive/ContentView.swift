@@ -130,7 +130,7 @@ struct ContentView: View {
                 }) {
                     Image(systemName: "bolt.fill")
                         .foregroundColor(.white)
-                        .padding()
+                                .padding()
                 }
             }
             
