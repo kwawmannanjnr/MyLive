@@ -18,15 +18,10 @@ struct ContentView: View {
     @State private var displayedMessages: [ChatMessage] = []
     @State private var chatTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
     
-    
-    
-    
     var body: some View {
         ZStack {
             CameraView()
                 .edgesIgnoringSafeArea(.all) // Makes the camera view fullscreen
-            
-            
             VStack {
                 HStack {
                     // Placeholder image for the user
@@ -90,7 +85,9 @@ struct ContentView: View {
                             ChatMessageView(message: message)
                         }
                     }
-                    .frame(maxHeight: 150)
+                    .frame(maxHeight: 300)  
+                    .padding(.top)
+
                     
                     // Chat box at the bottom
                     HStack {
@@ -103,9 +100,8 @@ struct ContentView: View {
                             Image(systemName: "paperplane.fill")
                         }
                     }
-                    .padding()
                 }
-                .background(Color.clear)
+                .background(LinearGradient(gradient: Gradient(colors: [Color.black.opacity(0.01), Color.black.opacity(1), Color.black.opacity(0.01)]), startPoint: .bottom, endPoint: .top))
                 .frame(maxWidth: .infinity)
                 .frame(height: 200) // Adjust the height as needed
                 .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - 100) // Adjust position as needed
@@ -113,8 +109,6 @@ struct ContentView: View {
             .onReceive(chatTimer) { _ in
                 addRandomMessage()
             }
-            
-            
             HStack {
                 Button(action: {
                     // Action for the flip camera button
@@ -156,6 +150,8 @@ struct ChatMessage: Identifiable, Decodable {
     var id: Int
     var username: String
     var message: String
+    var profileImage: String // Assuming this is a URL to the profile image
+
 }
 
 // Dummy function to simulate loading chat messages from a JSON file
@@ -163,23 +159,35 @@ func loadChatMessages() -> [ChatMessage] {
     // Here, you would load your JSON file and parse the chat messages
     // Since there's no file access in this environment, let's return a dummy array
     return (1...100).map { id in
-        ChatMessage(id: id, username: "User \(id)", message: "This is message number \(id)")
+        ChatMessage(id: id, username: "User \(id)", message: "This is message number \(id)", profileImage: "")
     }
 }
 struct ChatMessageView: View {
     let message: ChatMessage
     
     var body: some View {
-        HStack {
-            Text(message.username).bold()
-            Text(": \(message.message)")
+        HStack(alignment: .top) {
+            if let imageUrl = URL(string: message.profileImage), let imageData = try? Data(contentsOf: imageUrl), let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .frame(width: 40, height: 40)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.gray, lineWidth: 1))
+            } else {
+                Image(systemName: "person.fill")
+                    .resizable()
+                    .frame(width: 40, height: 40)
+                    .background(Color.gray)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.gray, lineWidth: 1))
+            }
+            VStack(alignment: .leading) {
+                Text(message.username).bold()
+                Text(message.message)
+            }
         }
-        .padding(5)
-        .background(Color.gray.opacity(0.2))
-        .cornerRadius(5)
     }
 }
-
 #Preview {
     ContentView()
 }
